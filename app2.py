@@ -31,7 +31,7 @@ if st.button("Submit"):
     
     # Generate response with adjusted parameters
     try:
-        response = generator(full_prompt, max_length=300, num_return_sequences=1, truncation=True)
+        response = generator(full_prompt, max_new_tokens=150, num_return_sequences=1, truncation=True)
         generated_text = response[0]["generated_text"]
         
         # Extract response
