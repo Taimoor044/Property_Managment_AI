@@ -1,9 +1,9 @@
 import streamlit as st
 from transformers import pipeline
 
-# Load the model with error handling
+# Load the model with error handling and optimized settings
 try:
-    generator = pipeline("text-generation", model="distilgpt2", device=-1)  # device=-1 forces CPU usage
+    generator = pipeline("text-generation", model="distilgpt2", device=-1, framework="pt")  # Force CPU, explicit PyTorch
 except Exception as e:
     st.error(f"Error loading model: {str(e)}")
     st.stop()
@@ -29,9 +29,9 @@ if st.button("Submit"):
     system_prompt += training_data
     full_prompt = f"{system_prompt}\n\nUser Query: {user_input}\n\nAssistant Response: "
     
-    # Generate response with error handling
+    # Generate response with adjusted parameters
     try:
-        response = generator(full_prompt, max_length=600, num_return_sequences=1, truncation=True, pad_token_id=50256)
+        response = generator(full_prompt, max_length=300, num_return_sequences=1, truncation=True)
         generated_text = response[0]["generated_text"]
         
         # Extract response
