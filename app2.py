@@ -1,12 +1,20 @@
 import streamlit as st
 from transformers import pipeline
 
-# Load the model
-generator = pipeline("text-generation", model="distilgpt2")
+# Load the model with error handling
+try:
+    generator = pipeline("text-generation", model="distilgpt2", device=-1)  # device=-1 forces CPU usage
+except Exception as e:
+    st.error(f"Error loading model: {str(e)}")
+    st.stop()
 
 # Load training data
-with open("training_data.txt", "r", encoding="utf-8") as f:
-    training_data = f.read()
+try:
+    with open("training_data.txt", "r", encoding="utf-8") as f:
+        training_data = f.read()
+except FileNotFoundError:
+    st.error("training_data.txt not found. Please ensure it's in the repository.")
+    st.stop()
 
 # Streamlit app
 st.title("Property Management AI")
@@ -21,15 +29,18 @@ if st.button("Submit"):
     system_prompt += training_data
     full_prompt = f"{system_prompt}\n\nUser Query: {user_input}\n\nAssistant Response: "
     
-    # Generate response
-    response = generator(full_prompt, max_length=600, num_return_sequences=1, truncation=True, pad_token_id=50256)
-    generated_text = response[0]["generated_text"]
-    
-    # Extract response
-    response_start = generated_text[len(full_prompt):].strip()
-    if not response_start:
-        response_start = "No response generated. Please try rephrasing your query."
-    
-    # Display response
-    st.write("**Response:**")
-    st.write(response_start)
+    # Generate response with error handling
+    try:
+        response = generator(full_prompt, max_length=600, num_return_sequences=1, truncation=True, pad_token_id=50256)
+        generated_text = response[0]["generated_text"]
+        
+        # Extract response
+        response_start = generated_text[len(full_prompt):].strip()
+        if not response_start:
+            response_start = "No response generated. Please try rephrasing your query."
+        
+        # Display response
+        st.write("**Response:**")
+        st.write(response_start)
+    except Exception as e:
+        st.error(f"Error generating response: {str(e)}")
